@@ -2,7 +2,7 @@ import os,sys
 sys.path.append('..')
 import h5py
 import pandas as pd
-from rootconvert import to_root
+from utils.rootconvert import to_root
 
 h5File = h5py.File('small.h5','r')
 treeArray = h5File['test'][()]

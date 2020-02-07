@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from TrainingUtils import *
+from utils.TrainingUtils import *
 #from rootconvert import to_root
 import tensorflow.keras as keras
 from tensorflow.keras.models import Model, Sequential, load_model

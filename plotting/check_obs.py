@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from TrainingUtils import *
+from utils.TrainingUtils import *
 import fastjet as fj
 import energyflow as ef
 import tensorflow.keras as keras

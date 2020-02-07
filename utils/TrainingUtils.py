@@ -1,5 +1,4 @@
 from __future__ import print_function, division
-
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -11,7 +10,8 @@ import h5py
 import pandas as pd
 from sklearn.metrics import roc_curve, auc
 from scipy.stats import entropy
-from Model_defs import * 
+from .model_defs import * 
+from sklearn.utils import shuffle as sk_shuffle
 
 fig_size = (12,9)
 

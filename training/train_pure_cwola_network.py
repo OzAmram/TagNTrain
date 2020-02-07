@@ -1,10 +1,9 @@
 import sys
 sys.path.append('..')
-from TrainingUtils import *
+from utils.TrainingUtils import *
 import energyflow as ef
 from energyflow.utils import data_split, pixelate, standardize, to_categorical, zero_center
 import tensorflow.keras as keras
-from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Input, Flatten, Activation, Reshape, UpSampling2D
 from tensorflow.keras.models import Model, Sequential, load_model
 from sklearn.utils import shuffle as sk_shuffle
 import h5py

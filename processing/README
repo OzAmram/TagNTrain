@@ -1,5 +1,5 @@
 This directory wraps some fastjet-contrib files into python
-There is  a crappy MakeFile to make the NsubjettinessWrapper python library
+There is  a MakeFile to make the NsubjettinessWrapper python library
 So just run 'make' to create everything. 'make clean' also works
 
 Warning : You need to have compiled fastjet-contrib with CXXFLAGS=-fPIC

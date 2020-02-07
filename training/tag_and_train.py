@@ -1,4 +1,5 @@
 import sys
+sys.path.append('..')
 from utils.TrainingUtils import *
 import energyflow as ef
 from energyflow.utils import data_split,  standardize, zero_center

@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from TrainingUtils import *
+from utils.TrainingUtils import *
 #from rootconvert import to_root
 import tensorflow.keras as keras
 from tensorflow.keras.models import Model, Sequential, load_model
@@ -67,7 +67,7 @@ newdf_unmask = pd_events[['is_signal','Mjj','Mj1','Mj2']][data_start:data_start 
 sig_mask = get_signal_mask(y_test, sig_frac)
 if(make_h5):
     newdf = newdf_unmask[sig_mask]
-    print(len(newdf_unmask['Mjj']),len(newdf['Mjj']))
+    #print(len(newdf_unmask['Mjj']),len(newdf['Mjj']))
 
 sig_effs = []
 bkg_effs = []
@@ -94,7 +94,7 @@ for idx,f in enumerate(f_models):
         j2_score = j2_score.reshape(-1)
         sig_eff = [len(Y[(j1_score > np.percentile(j1_score,i)) & (j2_score > np.percentile(j2_score,i)) & (Y==1)])/len(Y[Y==1]) for i in np.arange(0.,100., 100./n_points)]
         bkg_eff = [len(Y[(j1_score > np.percentile(j1_score,i)) & (j2_score > np.percentile(j2_score,i)) & (Y==0)])/len(Y[Y==0]) for i in np.arange(0.,100., 100./n_points)]
-        print('bkg eff 10% ',f,np.percentile(j1_score,10),np.percentile(j2_score,10),bkg_eff[11])
+        #print('bkg eff 10% ',f,np.percentile(j1_score,10),np.percentile(j2_score,10),bkg_eff[11])
         sig_effs.append(sig_eff)
         bkg_effs.append(bkg_eff)
         aucs.append(auc(bkg_eff, sig_eff))
@@ -110,18 +110,16 @@ for idx,f in enumerate(f_models):
             X = standardize(*zero_center(X))[0]
             scores = jj_model.predict(X, batch_size = 1000).reshape(-1)
             bkg_eff, sig_eff, thresholds_cwola = roc_curve(Y, scores)
-            print('bkg eff 10% ',f,np.percentile(scores,10),len(Y[(scores > np.percentile(scores,10)) & (Y==0)])/len(Y[Y==0]),bkg_eff)
+            #print('bkg eff 10% ',f,np.percentile(scores,10),len(Y[(scores > np.percentile(scores,10)) & (Y==0)])/len(Y[Y==0]),bkg_eff)
             sig_effs.append(sig_eff)
             bkg_effs.append(bkg_eff)
             aucs.append(auc(bkg_eff, sig_eff))
 
-            print(len(scores))
             if(make_h5): newdf['score_%s'%flab] = scores[sig_mask]
 
         if(model_type[idx] == 4): #Dense
             jj_model = load_model(model_dir + "jj_" + f)
             X = np.append(j1_dense_inputs, j2_dense_inputs, axis = -1)
-            print(j1_dense_inputs.shape, X.shape)
             scores = jj_model.predict(X, batch_size = 1000).reshape(-1)
             bkg_eff, sig_eff, thresholds_cwola = roc_curve(Y, scores)
             sig_effs.append(sig_eff)

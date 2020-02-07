@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from TrainingUtils import *
+from utils.TrainingUtils import *
 import energyflow as ef
 from energyflow.utils import data_split, pixelate, standardize, to_categorical, zero_center
 import tensorflow.keras as keras
