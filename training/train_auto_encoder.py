@@ -88,7 +88,7 @@ if(draw_images):
     plt.show()
 
 
-(X_train, X_val, X_test, Y_train, Y_val, Y_test) = data_split(images, Y, val=val_frac, test=test_frac, shuffle = False)
+(X_train, X_val, X_test, Y_train, Y_val, Y_test) = data_split(images, Y, val=val_frac, test=test_frac, shuffle = True)
 
 X_train, X_val, X_test = standardize(*zero_center(X_train, X_val, X_test))
 

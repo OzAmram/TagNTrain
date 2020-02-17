@@ -109,9 +109,22 @@ def clean_events_v2(events):
     feats = feats / feats.std(axis=0)
     return feats
 
+
 #create a mask that removes signal events to enforce a given fraction
-#assumes signal is randomly distributed in the events
-def get_signal_mask(events, sig_frac, seed=12345):
+#removes signal from later events (should shuffle after)
+def get_signal_mask(events, sig_frac):
+
+    num_events = events.shape[0]
+    cur_frac =  np.mean(events)
+    keep_frac = (sig_frac/cur_frac)
+    progs = np.cumsum(events)/(num_events * cur_frac)
+    keep_idxs = (events.reshape(num_events) == 0) | (progs < keep_frac)
+    return keep_idxs
+
+
+#create a mask that removes signal events to enforce a given fraction
+#Keeps signal randomly distributed but has more noise
+def get_signal_mask_rand(events, sig_frac, seed=12345):
 
     np.random.seed(seed)
     num_events = events.shape[0]

@@ -99,7 +99,7 @@ else:
 
 
 if(filt_sig):
-    sig_mask = get_signal_mask(y_test, sig_frac)
+    sig_mask = get_signal_mask(Y, sig_frac)
     newdf = new_df_unmask[sig_mask]
 else:
     newdf = new_df_unmask

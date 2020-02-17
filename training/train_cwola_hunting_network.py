@@ -18,7 +18,7 @@ parser.add_option("--fin", default='../data/jet_images.h5', help="Input file wit
 parser.add_option("--plot_dir", default='../plots/', help="Directory to output plots")
 parser.add_option("--model_dir", default='../models/', help="Directory to read in and output models")
 parser.add_option("--model_name", default='test.h5', help="What to name the model")
-parser.add_option("--num_epoch", type = 'int', default=20, help="How many epochs to train for")
+parser.add_option("--num_epoch", type = 'int', default=30, help="How many epochs to train for")
 
 parser.add_option("--use_both", default = False, action = "store_true", help="Make a classifier for both jets together instead of just 1")
 parser.add_option("-j", "--training_j", type ='int', default = 1, help="Which jet to make a classifier for (1 or 2)")
@@ -177,7 +177,7 @@ Y_mjj_window = Y_mjj_window[keep_event]
 
 (X_train, X_val, X_test, 
         Y_train, Y_val, Y_test, 
-Y_train_true, Y_val_true, Y_test_true) = data_split(X, Y_mjj_window, Y, val=val_frac, test=test_frac, shuffle = False)
+Y_train_true, Y_val_true, Y_test_true) = data_split(X, Y_mjj_window, Y, val=val_frac, test=test_frac, shuffle = True)
 
 
 

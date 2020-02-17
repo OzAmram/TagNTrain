@@ -21,16 +21,16 @@ fin = "../data/jet_images.h5"
 plot_dir = "../plots/mass_sculpting/"
 model_dir = "../models/"
 
-model_name = "cwbh_dense_03p.h5"
-plot_label = "cwbh_dense_03p__"
+model_name = "auto_encoder_1p.h5"
+plot_label = "autoencoder_1p__"
 
 #model types: 0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)
-model_type = 4
+model_type = 1
 use_dense = model_type == 2 or model_type == 4
 use_both = model_type == 3 or model_type == 4
 new_dense = False
 
-num_data = 200000
+num_data = 100000
 data_start = 600000
 
 js_threshholds = [97., 95., 90., 80., 70., 50., 0.0]
@@ -111,8 +111,8 @@ if(model_type <= 2):
     elif(model_type ==1):
         j1_reco_images = j1_model.predict(j1_images, batch_size = batch_size)
         j2_reco_images = j2_model.predict(j2_images, batch_size = batch_size)
-        j1_scores =  np.mean(keras.losses.mean_squared_error(j1_reco_scores, j1_images), axis=(1,2)).reshape(-1)
-        j2_scores =  np.mean(keras.losses.mean_squared_error(j2_reco_scores, j2_images), axis=(1,2)).reshape(-1)
+        j1_scores =  np.mean(keras.losses.mean_squared_error(j1_reco_images, j1_images), axis=(1,2)).reshape(-1)
+        j2_scores =  np.mean(keras.losses.mean_squared_error(j2_reco_images, j2_images), axis=(1,2)).reshape(-1)
     elif(model_type == 2):
         j1_scores = j1_model.predict(j1_dense_inputs, batch_size = batch_size)
         j2_scores = j2_model.predict(j2_dense_inputs, batch_size = batch_size)

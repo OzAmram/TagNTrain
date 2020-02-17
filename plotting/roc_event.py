@@ -14,13 +14,14 @@ plot_dir = "../plots/"
 
 model_dir = "../models/"
 
-plot_name = "roc_event_1p.png"
+plot_name = "roc_event_01p.png"
 
 #model types: 0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)
 #f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_9p.h5", "cwbh_CNN_9p.h5", "TNT1_CNN_no_mjj_9p.h5", "TNT1_CNN__9p.h5"]
-f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_1p.h5", "cwbh_CNN_1p.h5", "TNT1_CNN_no_mjj_s10p_1p.h5",  "TNT1_CNN_s10p_1p.h5"]
+#f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_1p.h5", "cwbh_CNN_1p.h5", "TNT1_CNN_no_mjj_s10p_1p.h5",  "TNT2_CNN_s10p_1p.h5"]
 #f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_03p.h5", "cwbh_CNN_03p.h5", "TNT0_CNN_no_mjj_03p.h5", "TNT1_CNN_s10p_03p.h5"]
-labels = ["Supervised (both jets)","Supervised (separate)", "Auto Encoders", "CWola Hunting", "TNT", "TNT w/ Mjj"]
+f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_01p.h5", "cwbh_CNN_01p.h5", "TNT0_CNN_no_mjj_01p.h5", "TNT2_CNN_s10p_01p.h5"]
+labels = ["Supervised, both jets","Supervised, separate", "Autoencoders", "CWola hunting", "TNT", "TNT + M$_{jj}$"]
 model_type = [3, 0, 1, 3, 0, 0, 0, 0]
 colors = ["g", "gray", "b", "r","m","c", "skyblue", "yellow"]
 
@@ -131,15 +132,19 @@ for idx,f in enumerate(f_models):
 
 
 
+fs = 18
+fs_leg = 16
 plt.figure(figsize=fig_size)
 for i in range(len(labels)):
     print(labels[i], aucs[i])
     if(logy):
         temp = np.array(bkg_effs[i])
+        #guard against division by 0
+        temp = np.clip(temp, 1e-8, 1.)
         ys = 1./temp
     else:
         ys = bkg_effs[i]
-    plt.plot(sig_effs[i], ys, lw=2, color=colors[i], label=labels[i] + (" = %.3f" % aucs[i]))
+    plt.plot(sig_effs[i], ys, lw=2, color=colors[i], label=labels[i] + (" (%.3f)" % aucs[i]))
 #plt.plot(fpr_cwola, tpr_cwola, lw=2, color="purple", label="CWOLA = %.3f" %(auc_cwola))
 #plt.plot(tnt_bkg_eff, tnt_sig_eff, lw=2, color="r", label="TNT Dense = %.3f"%(auc(tnt_bkg_eff,tnt_sig_eff)))
 #plt.plot(sup_bkg_eff, sup_sig_eff, lw=2, color="g", label="Sup. Dense = %.3f"%(auc(sup_bkg_eff,sup_sig_eff)))
@@ -147,16 +152,17 @@ for i in range(len(labels)):
 
 #plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='k', label='random chance')
 plt.xlim([0, 1.0])
-plt.xlabel('Signal Efficiency')
+plt.xlabel('Signal Efficiency', fontsize = fs)
 if(logy):
     plt.ylim([1., 1e4])
     plt.yscale('log')
-    plt.ylabel('QCD Rejection Rate')
+    plt.ylabel('QCD Rejection Rate', fontsize = fs)
 else:
     plt.ylim([0, 1.0])
     plt.ylabel('Background Efficiency')
-#plt.title('receiver operating curve')
-plt.legend(loc="upper right")
+plt.tick_params(axis='x', labelsize=fs_leg)
+plt.tick_params(axis='y', labelsize=fs_leg)
+plt.legend(loc="upper right", fontsize= fs_leg)
 plt.savefig(plot_dir+plot_name)
 
 

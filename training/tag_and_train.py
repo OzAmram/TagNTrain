@@ -17,6 +17,8 @@ parser.add_option("--plot_dir", default='../plots/', help="Directory to output p
 parser.add_option("--model_dir", default='../models/', help="Directory to read in and output models")
 parser.add_option("--fin", default='../data/jet_images.h5', help="Input file for training.")
 parser.add_option("--extra_label", default='', help="Extra string to add to name of models")
+parser.add_option("--model_start", default="", help="Starting point for model (empty string for new model)")
+
 parser.add_option("-i", "--iter", dest = "tnt_iter", type = 'int', default=0, 
         help="What iteration of  the tag & train algorithm this is (Start = 0).")
 parser.add_option("--evt_offset", type='int', default=0, help="Offset to set which events to use for training")
@@ -57,6 +59,7 @@ if(not options.no_end_str):
     if(options.filt_sig == False): end_str = "_9p.h5"
     elif(options.sig_frac == 0.01): end_str = "_1p.h5"
     elif(options.sig_frac == 0.003): end_str = "_03p.h5"
+    elif(options.sig_frac == 0.001): end_str = "_01p.h5"
 print("End string is ", end_str)
 
 if(options.use_dense): network_type = "dense"
@@ -77,7 +80,7 @@ model_name = "TNT" + str(options.tnt_iter) + "_" + network_type + "_" + extra_la
 if(options.retrain):
     model_start = model_name
 else:
-    model_start = ""
+    model_start = options.model_start
 
 plot_prefix = "TNT" + str(options.tnt_iter) + "_" + network_type + "_" + extra_label 
 
@@ -274,7 +277,7 @@ if(options.mjj_cut):
 (X_train, X_val, X_test, 
         jet_pts_train, jet_pts_val, jet_pts_test,
         Y_true_train, Y_true_val, Y_true_test,
-        Y_lab_train, Y_lab_val, Y_lab_test) = data_split(X, jet_pts, Y_true, Y_lab, val=val_frac, test=test_frac, shuffle = False)
+        Y_lab_train, Y_lab_val, Y_lab_test) = data_split(X, jet_pts, Y_true, Y_lab, val=val_frac, test=test_frac, shuffle = True)
 
 evt_weights = np.ones(X_train.shape[0])
 
