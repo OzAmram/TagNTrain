@@ -11,45 +11,35 @@ from optparse import OptionParser
 from optparse import OptionGroup
 
 
-def scatter_plot(pts, colors, y_label = "", x_label = "", fname = "", alpha = 0.5, size = 0.4):
+def scatter_plot(pts, colors, y_label = "", x_label = "", fname = "", alpha = 0.5, size = 0.4, fontsize=16):
     fig, ax = plt.subplots()
     for i in range(len(pts)):
         ax.scatter(pts[i][0], pts[i][1], alpha = alpha, s=size, c = colors[i])
-    if(y_label != ""): ax.set_ylabel(y_label)
-    if(x_label != ""): ax.set_xlabel(x_label)
+    if(y_label != ""): ax.set_ylabel(y_label, fontsize = fontsize)
+    if(x_label != ""): ax.set_xlabel(x_label, fontsize = fontsize)
+    plt.tick_params(axis='y', labelsize=12)
+    plt.tick_params(axis='x', labelsize=12)
     if(fname != ""): plt.savefig(fname)
 
 
 
-parser = OptionParser()
-parser.add_option("--fin", default='../data/jet_images.h5', help="Input images file")
-parser.add_option("--dense_fin", default='../data/events_cwbh.h5', help="File with variables to plot")
-parser.add_option("--plot_dir", default='../plots/', help="Directory to output plots")
-parser.add_option("--model_dir", default='../models/', help="Directory to read in and output models")
-parser.add_option("--model_name", default='test.h5', help="Name of model to load")
-parser.add_option("--model_type", type='int', default=0, help="0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)")
-parser.add_option("--plot_label", default="bumps_", help="what to call the plots")
-parser.add_option("--num_data", type='int', default=200000)
-parser.add_option("--data_start", type='int', default=600000)
+fin = "../data/jet_images.h5"
+dense_fin = "../data/events_cwbh.h5"
+plot_dir = "../plots/"
+model_dir = "../models/"
 
-(options, args) = parser.parse_args()
-
-fin = options.fin
-plot_dir = options.plot_dir
-model_dir = options.model_dir
-dense_fin = options.dense_fin
 
 
 #model types: 0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)
-model_name = "TNT1_CNN__1p.h5"
-plot_header = "TNT1_CNN_corr_"
+model_name = "TNT2_CNN_s10p_1p.h5"
+plot_header = "TNT2_CNN_corr_"
 model_type = 0
 
 
-compare_truth = False
+compare_truth = True
 mjj_window = False
-mjj_low = 4100
-mjj_high = 4700
+mjj_low = 3300
+mjj_high = 3700
 
 num_data = 100000
 data_start = 1000000
@@ -80,7 +70,7 @@ if(not use_dense):
     j2_4vec = jet_infos[:,5:9]
     mjj = jet_infos[:, -1]
 
-    print(mjj[:20])
+    #print(mjj[:20])
 
 
 if(new_dense):
@@ -97,7 +87,7 @@ if(new_dense):
     j1_dense_inputs = dense_events[dense_start:dense_start + num_data, idx1_start:idx1_end]
     j2_dense_inputs = dense_events[dense_start:dense_start + num_data, idx1_end:idx2_end]
     mjj = dense_events[dense_start:dense_start + num_data, 1]
-    print(mjj[:20])
+    #print(mjj[:20])
     Y = dense_events[dense_start:dense_start + num_data, 0]
 
     idx1_start -=2
@@ -206,7 +196,7 @@ colors = ['gray','b', 'r']
 alpha = 0.5
 size = 0.4
 
-obs_labels = ['sqrt(tau^2_1)/tau^1_1', 'tau21', 'tau32', 'tau43', 'ntrk']
+obs_labels = ['sqrt(tau^2_1)/tau^1_1', r'$\tau_{21}$', r'$\tau_{32}$', r'$\tau_{43}$', r'$N_{trk}$']
 plot_labels = ['tau_ratio.png', 'tau21.png', 'tau32.png', 'tau43.png', 'ntrk.png']
 
 j1_Ms_cut = j1_Ms[j1_pass_cut]

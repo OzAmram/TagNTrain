@@ -21,23 +21,23 @@ fin = "../data/jet_images.h5"
 plot_dir = "../plots/mass_sculpting/"
 model_dir = "../models/"
 
-model_name = "auto_encoder_1p.h5"
-plot_label = "autoencoder_1p__"
+model_name = "TNT2_CNN_s10p_1p.h5"
+plot_label = "TNT2_1p_"
 
 #model types: 0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)
-model_type = 1
+model_type = 0
 use_dense = model_type == 2 or model_type == 4
 use_both = model_type == 3 or model_type == 4
 new_dense = False
 
 num_data = 100000
-data_start = 600000
+data_start = 1000000
 
-js_threshholds = [97., 95., 90., 80., 70., 50., 0.0]
+js_threshholds = [90., 80., 70., 50., 0.0]
 jj_threshholds = [99., 95., 90., 75., 0.0]
 
 reduce_signal = True
-signal_fraction = 0.003
+signal_fraction = 0.01
 
 
 if(not use_dense):
@@ -148,8 +148,12 @@ else:
 
 save_figs = True
 labels = ['background', 'signal']
-colors = ['b', 'r', 'g', 'purple', 'pink', 'black', 'magenta', 'pink']
-colors_sculpt = colors[len(colors)-len(threshholds):]
+#colors = ['b', 'r', 'g', 'purple', 'pink', 'black', 'magenta', 'pink']
+colors = ["g", "gray", "b", "r","m", "skyblue", "pink"]
+colors_sculpt = []
+colormap = cm.viridis
+normalize = mcolors.Normalize(vmin = 0., vmax=100.)
+
 
 
 n_m_bins = 30
@@ -171,13 +175,16 @@ dist_labels = []
 
 for i,thresh in enumerate(threshholds):
     print("Idx %i, thresh %.2f "  %(i, thresh))
+    percentile = (100. - thresh)
+    if(thresh == 0.): label = "No Selection"
+    else: label = "X =%.0f%%" % percentile
+    dist_labels.append(label)
     if(model_type <= 2):
-        dist_labels.append("QCD: both j's %i %% cut" % (100. - thresh))
         pass_cut = (j1_scores > j1_cut_vals[i]) & (j2_scores > j2_cut_vals[i])
     else:
-        dist_labels.append("QCD: %i %% cut" % (100. - thresh))
         pass_cut = (jj_scores > jj_cut_vals[i])
 
+    colors_sculpt.append(colormap(normalize(thresh)))
     sig_pass_cut = pass_cut & sig_events
     bkg_pass_cut = pass_cut & bkg_events
     masses = [mjj[bkg_events & pass_cut], mjj[sig_events & pass_cut]]
@@ -187,15 +194,14 @@ for i,thresh in enumerate(threshholds):
     #FIXME Turn into histogram first
     #js_div = JS_Distance(mjj_dists[0], mjj[bkg_events & pass_cut])
     #print("Mean mass, JS divergence is : ", np.mean(mjj_dists[i]), js_div)
-    percentile = (100. - thresh)
-    make_histogram(masses, labels, colors[:2], 'Dijet Mass (GeV)', "Select top %.1f %%" % percentile, n_m_bins, 
+    make_histogram(masses, labels, ['b','r'], 'Dijet Mass (GeV)', label, n_m_bins, 
             stacked = True, save = save_figs,  h_range = m_range, fname=plot_dir + plot_label + "%.0fpcut_mass.png" %percentile)
 
 #j1_pt_dists = [j1_pt[bkg_events & (j1_scores > j1_cut_vals[i]) & (j2_scores > j2_cut_vals[i])] for i in range(len(threshholds))] 
 #j2_pt_dists = [j2_pt[bkg_events & (j1_scores > j1_cut_vals[i]) & (j2_scores > j2_cut_vals[i])] for i in range(len(threshholds))] 
 
-make_histogram(mjj_dists, dist_labels, colors_sculpt, 'Dijet Mass (GeV)', "QCD Dijet Mass distribution", n_m_bins,
-               normalize=True, save = save_figs,  h_range = m_range, fname=plot_dir + plot_label + "qcd_mass_sculpt.png")
+make_histogram(mjj_dists, dist_labels, colors_sculpt, 'Dijet Mass (GeV)', "", n_m_bins,
+               normalize=True, yaxis_label ="Arbitrary Units", save = save_figs,  h_range = m_range, fname=plot_dir + plot_label + "qcd_mass_sculpt.png")
 
 #make_histogram(j1_pt_dists, dist_labels, colors_sculpt, 'J1 Pt(GeV)', "QCD J1 Pt distribution", n_pt_bins,
 #               normalize=True, save = save_figs,  h_range = pt_range, fname=plot_dir + plot_label + "qcd_j1_pt_sculpt.png")

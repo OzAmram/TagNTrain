@@ -4,6 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import matplotlib.colors as mcolors
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import h5py
@@ -197,16 +198,21 @@ def make_roc_curve(classifiers, y_true, colors = None, logy=False, labels = None
     #else: 
         #plt.show(block=False)
 
-def make_histogram(entries, labels, colors, axis_label, title, num_bins, normalize = False, stacked = False, save=False, h_type = 'step', h_range = None, fname=""):
+def make_histogram(entries, labels, colors, xaxis_label, title, num_bins, normalize = False, stacked = False, save=False, h_type = 'step', 
+        h_range = None, fontsize = 16, fname="", yaxis_label = ""):
     alpha = 1.
     if(stacked): 
         h_type = 'barstacked'
         alpha = 0.2
     fig = plt.figure(figsize=fig_size)
     plt.hist(entries, bins=num_bins, range=h_range, color=colors, alpha=alpha,label=labels, density = normalize, histtype=h_type)
-    plt.xlabel(axis_label)
-    plt.title(title)
-    plt.legend(loc='upper right')
+    plt.xlabel(xaxis_label, fontsize =fontsize)
+    plt.tick_params(axis='x', labelsize=fontsize)
+    if(yaxis_label != ""):
+        plt.ylabel(yaxis_label, fontsize=fontsize)
+        plt.tick_params(axis='y', labelsize=fontsize)
+    plt.title(title, fontsize=fontsize)
+    plt.legend(loc='upper right', fontsize = fontsize)
     if(save): plt.savefig(fname)
     #else: plt.show(block=False)
     return fig

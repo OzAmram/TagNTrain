@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from TrainingUtils import *
+from utils.TrainingUtils import *
 import fastjet as fj
 import energyflow as ef
 import tensorflow.keras as keras
@@ -9,17 +9,17 @@ from energyflow.utils import data_split, pixelate, standardize, to_categorical, 
 import h5py
 
 
-fin = "../../data/jet_images_v3.h5"
-plot_dir = "plots_v3/"
-model_dir = "models_v3/"
+fin = "../data/jet_images.h5"
+plot_dir = "../plots/"
+model_dir = "../models/"
 
-#j1_classifier = "j1_pure_cwola.h5"
-#j2_classifier = "j2_pure_cwola.h5"
-#plot_label = "pure_cwola_"
+j1_classifier = "j1_pure_cwola.h5"
+j2_classifier = "j2_pure_cwola.h5"
+plot_label = "pure_cwola_"
 
-j1_classifier = "j1_TNT1_CNN_no_mjj_s10p_1p.h5"
-j2_classifier = "j2_TNT1_CNN_no_mjj_s10p_1p.h5"
-plot_label = "TNT1_no_mjj_"
+#j1_classifier = "j1_TNT1_CNN_no_mjj_s10p_1p.h5"
+#j2_classifier = "j2_TNT1_CNN_no_mjj_s10p_1p.h5"
+#plot_label = "TNT1_no_mjj_"
 
 is_auto_encoder = False
 
@@ -96,13 +96,15 @@ correlation = np.corrcoef(bkg_j1s, bkg_j2s)[0,1]
 print("correlation :", correlation)
 text_str = r'$\rho_{j1,j2} $ = %.3f' % correlation
 print(text_str)
-plt.text(0.45, 0.45, text_str, fontsize=12)
+plt.text(0.45, 0.45, text_str, fontsize=14)
 #ax.legend(loc='upper right')
 
 plt.xlim([0.1, 0.6])
 plt.ylim([0.1, 0.5])
-ax.set_ylabel("Jet2 Score")
-ax.set_xlabel("Jet1 Score")
+ax.set_ylabel("Jet2 Score", fontsize=16)
+ax.set_xlabel("Jet1 Score", fontsize=16)
+plt.tick_params(axis='y', labelsize=12)
+plt.tick_params(axis='x', labelsize=12)
 plt.savefig(plot_dir + plot_label + "correlation.png")
 
 

@@ -14,13 +14,13 @@ plot_dir = "../plots/"
 
 model_dir = "../models/"
 
-plot_name = "roc_event_01p.png"
+plot_name = "roc_event_03p.png"
 
 #model types: 0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)
 #f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_9p.h5", "cwbh_CNN_9p.h5", "TNT1_CNN_no_mjj_9p.h5", "TNT1_CNN__9p.h5"]
 #f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_1p.h5", "cwbh_CNN_1p.h5", "TNT1_CNN_no_mjj_s10p_1p.h5",  "TNT2_CNN_s10p_1p.h5"]
-#f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_03p.h5", "cwbh_CNN_03p.h5", "TNT0_CNN_no_mjj_03p.h5", "TNT1_CNN_s10p_03p.h5"]
-f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_01p.h5", "cwbh_CNN_01p.h5", "TNT0_CNN_no_mjj_01p.h5", "TNT2_CNN_s10p_01p.h5"]
+f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_03p.h5", "cwbh_CNN_03p.h5", "TNT0_CNN_no_mjj_03p.h5", "TNT1_CNN_s10p_03p.h5"]
+#f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_01p.h5", "cwbh_CNN_01p.h5", "TNT0_CNN_no_mjj_01p.h5", "TNT2_CNN_s10p_01p.h5"]
 labels = ["Supervised, both jets","Supervised, separate", "Autoencoders", "CWola hunting", "TNT", "TNT + M$_{jj}$"]
 model_type = [3, 0, 1, 3, 0, 0, 0, 0]
 colors = ["g", "gray", "b", "r","m","c", "skyblue", "yellow"]
