@@ -1,7 +1,8 @@
 # TagNTrain
 
 
-Code to reproduce results from Tag N' Train paper.
+Code to reproduce results from Tag N' Train paper ( https://arxiv.org/abs/2002.12376)
+
 
 LHCO R&D Dataset used in the paper is available from here: https://zenodo.org/record/2629073
 
