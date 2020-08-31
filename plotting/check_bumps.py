@@ -39,8 +39,8 @@ use_or = False
 use_j = 0
 
 
-reduce_signal = False
-signal_fraction = 0.003
+reduce_signal = True
+signal_fraction = 0.01
 #model types: 0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)
 
 
@@ -115,6 +115,11 @@ if(not use_dense):
     j2_images = np.expand_dims(j2_images_raw, axis=-1)
     j2_images = standardize(*zero_center(j2_images, np.zeros_like(j2_images)))[0]
 
+mjj_low = 3300.
+mjj_high = 3700.
+mjj_cut = (dijet_mass > mjj_low) & (dijet_mass < mjj_high)
+print(np.mean(Y[mjj_cut]))
+exit(1)
 
 batch_size = 1000
 

@@ -9,19 +9,19 @@ from energyflow.utils import data_split, pixelate, standardize, to_categorical, 
 import h5py
 
 
-fin = "../data/jet_images.h5"
+fin = "../data/jet_images_v3.h5"
 plot_dir = "../plots/"
 model_dir = "../models/"
 
-j1_classifier = "j1_pure_cwola.h5"
-j2_classifier = "j2_pure_cwola.h5"
-plot_label = "pure_cwola_"
+j1_classifier = "j1_auto_encoder_01p.h5"
+j2_classifier = "j2_auto_encoder_01p.h5"
+plot_label = "auto_encoder_"
 
 #j1_classifier = "j1_TNT1_CNN_no_mjj_s10p_1p.h5"
 #j2_classifier = "j2_TNT1_CNN_no_mjj_s10p_1p.h5"
 #plot_label = "TNT1_no_mjj_"
 
-is_auto_encoder = False
+is_auto_encoder = True
 
 num_data = 100000
 data_start = 1000000
@@ -88,7 +88,7 @@ size = 0.4
 
 fig, ax = plt.subplots()
 ax.scatter(bkg_j1s, bkg_j2s , alpha = alpha, c = colors[0], s=size, label = "background")
-ax.scatter(sig_j1s, sig_j2s , alpha = alpha, c = colors[1], s=size, label = "signal")
+#ax.scatter(sig_j1s, sig_j2s , alpha = alpha, c = colors[1], s=size, label = "signal")
 
 #m_cov = np.cov(bkg_j1s, bkg_j2s)
 #correlation = m_cov[0,1] / np.sqrt(m_cov[0,0] * m_cov[1,1])
@@ -96,11 +96,11 @@ correlation = np.corrcoef(bkg_j1s, bkg_j2s)[0,1]
 print("correlation :", correlation)
 text_str = r'$\rho_{j1,j2} $ = %.3f' % correlation
 print(text_str)
-plt.text(0.45, 0.45, text_str, fontsize=14)
+plt.annotate(text_str, xy = (0.05, 0.95), xycoords='axes fraction', fontsize=14)
 #ax.legend(loc='upper right')
 
-plt.xlim([0.1, 0.6])
-plt.ylim([0.1, 0.5])
+plt.xlim([0., 0.001])
+plt.ylim([0., 0.001])
 ax.set_ylabel("Jet2 Score", fontsize=16)
 ax.set_xlabel("Jet1 Score", fontsize=16)
 plt.tick_params(axis='y', labelsize=12)

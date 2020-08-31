@@ -17,7 +17,7 @@ def pj_from_PtEtaPhiM(pt, eta, phi, m):
 
 
 
-fin = "../data/jet_images.h5"
+fin = "../data/jet_images_v3.h5"
 plot_dir = "../plots/mass_sculpting/"
 model_dir = "../models/"
 
@@ -34,7 +34,7 @@ num_data = 100000
 data_start = 1000000
 
 js_threshholds = [90., 80., 70., 50., 0.0]
-jj_threshholds = [99., 95., 90., 75., 0.0]
+jj_threshholds = [99., 96., 90., 75., 0.0]
 
 reduce_signal = True
 signal_fraction = 0.01
@@ -175,16 +175,16 @@ dist_labels = []
 
 for i,thresh in enumerate(threshholds):
     print("Idx %i, thresh %.2f "  %(i, thresh))
-    percentile = (100. - thresh)
+    percentile = (100. - jj_threshholds[i])
     if(thresh == 0.): label = "No Selection"
-    else: label = "X =%.0f%%" % percentile
+    else: label = "Eff = %.0f%%" % percentile
     dist_labels.append(label)
     if(model_type <= 2):
         pass_cut = (j1_scores > j1_cut_vals[i]) & (j2_scores > j2_cut_vals[i])
     else:
         pass_cut = (jj_scores > jj_cut_vals[i])
 
-    colors_sculpt.append(colormap(normalize(thresh)))
+    colors_sculpt.append(colormap(normalize(js_threshholds[i])))
     sig_pass_cut = pass_cut & sig_events
     bkg_pass_cut = pass_cut & bkg_events
     masses = [mjj[bkg_events & pass_cut], mjj[sig_events & pass_cut]]
