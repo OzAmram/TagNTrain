@@ -3,11 +3,11 @@ sys.path.append('..')
 from utils.TrainingUtils import *
 import energyflow as ef
 from energyflow.utils import data_split, pixelate, standardize, to_categorical, zero_center
-import tensorflow.keras as keras
+import tensorflow as tf
 import h5py
 
 
-fin = "../data/jet_images.h5"
+fin = "../data/jet_images_v3.h5"
 plot_dir = "../plots/"
 model_dir = "../models/"
 model_name  = "supervised_CNN.h5"
@@ -21,10 +21,10 @@ npix = 40
 input_shape = (npix, npix)
 val_frac = 0.1
 test_frac = 0.0
-num_epoch = 20
+num_epoch = 40
 batch_size = 200
 
-use_j1 = True
+use_j1 = False
 use_both = False
 
 
@@ -84,11 +84,9 @@ print(X_train.shape)
 cnn = CNN(X_train[0].shape)
 cnn.summary()
 
-myoptimizer = keras.optimizers.Adam(lr=0.001, beta_1=0.8, beta_2=0.99, epsilon=1e-08, decay=0.0005)
-early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=1, mode='auto', baseline=None, restore_best_weights=True)
+myoptimizer = tf.keras.optimizers.Adam(lr=0.001, beta_1=0.8, beta_2=0.99, epsilon=1e-08, decay=0.0005)
+early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=1, mode='auto', baseline=None)
 cnn.compile(optimizer=myoptimizer,loss='binary_crossentropy',
-          metrics = [keras.metrics.AUC()],
-          callbacks = [keras.callbacks.History(), early_stop]
         )
 
 # train model

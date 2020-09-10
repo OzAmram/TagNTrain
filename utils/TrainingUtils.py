@@ -9,12 +9,30 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import h5py
 import pandas as pd
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, roc_auc_score
 from scipy.stats import entropy
 from .model_defs import * 
 from sklearn.utils import shuffle as sk_shuffle
 
 fig_size = (12,9)
+
+
+
+
+def make_selection(j1_scores, j2_scores, percentile):
+# make a selection with a given efficiency using both scores (and)
+    n_points = 400
+    j1_threshs = [np.percentile(j1_scores,i) for i in np.arange(0., 100., 100./n_points)]
+    j2_threshs = [np.percentile(j2_scores,i) for i in np.arange(0., 100., 100./n_points)]
+
+    combined_effs = np.array([np.mean((j1_scores > j1_threshs[i]) & (j2_scores > j2_threshs[i])) for i in range(n_points)])
+    cut_idx = np.argwhere(combined_effs < (100. - percentile)/100.)[0][0]
+    mask = (j1_scores > j1_threshs[cut_idx]) & (j2_scores > j2_threshs[cut_idx])
+    print("Cut idx %i, eff %.3e, j1_cut %.3e, j2_cut %.3e " %(cut_idx, combined_effs[cut_idx], j1_threshs[cut_idx], j2_threshs[cut_idx]))
+    print(np.mean(mask))
+    return mask
+
+
 
 
 def print_signal_fractions(y_true, y):
@@ -160,12 +178,23 @@ def plot_training(hist, fname =""):
 
 def make_roc_curve(classifiers, y_true, colors = None, logy=False, labels = None, save=False, fname=""):
     plt.figure(figsize=fig_size)
+    fs = 18
+    fs_leg = 16
 
     for idx,scores in enumerate(classifiers):
 
         fpr, tpr, thresholds = roc_curve(y_true, scores)
         roc_auc = auc(fpr, tpr)
         ys = fpr
+        fpr = np.array(fpr)
+        tpr = np.array(tpr)
+        cut = 1e-5
+        size_before = fpr.shape[0]
+        tpr = tpr[fpr > cut]
+        fpr = fpr[fpr > cut]
+        size_after = fpr.shape[0]
+
+
         if(logy): 
             #guard against division by 0
             fpr = np.clip(fpr, 1e-8, 1.)
@@ -177,21 +206,25 @@ def make_roc_curve(classifiers, y_true, colors = None, logy=False, labels = None
         if(colors != None): clr = colors[idx]
         print(lbl, " ", roc_auc)
         plt.plot(tpr, ys, lw=2, color=clr, label='%s = %.3f' % (lbl, roc_auc))
+        if(size_before != size_after and tpr[0] > 0.05):
+        #add a point to show the ending of the roc curve
+           plt.plot(tpr[0], ys[0], marker = 's', markersize = 10, color = clr) 
+
 
 
 
     plt.xlim([0, 1.0])
-    plt.xlabel('Signal Efficiency')
-    if(logy): 
+    plt.xlabel('Signal Efficiency', fontsize = fs)
+    if(logy):
         plt.ylim([1., 1e4])
         plt.yscale('log')
-        plt.ylabel('QCD Rejection Rate')
-    else: 
-        plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='k', label='random chance')
-        plt.xlabel('QCD Efficiency')
+        plt.ylabel('QCD Rejection Rate', fontsize = fs)
+    else:
         plt.ylim([0, 1.0])
-
-    plt.legend(loc="lower right")
+        plt.ylabel('Background Efficiency')
+    plt.tick_params(axis='x', labelsize=fs_leg)
+    plt.tick_params(axis='y', labelsize=fs_leg)
+    plt.legend(loc="upper right", fontsize= fs_leg)
     if(save): 
         print("Saving roc plot to %s" % fname)
         plt.savefig(fname)
@@ -297,3 +330,55 @@ class AdditionalValidationSets(tf.keras.callbacks.Callback):
                 print("%s   %.4f " % (valuename, result))
                 self.history.setdefault(valuename, []).append(result)
             print("\n")
+
+
+class RocCallback(tf.keras.callbacks.Callback):
+    def __init__(self,training_data,validation_data, extra_label = "", freq = 1):
+        self.extra_label = extra_label
+        self.freq = freq
+        self.x = training_data[0]
+        self.y = training_data[1]
+        self.x_val = validation_data[0]
+        self.y_val = validation_data[1]
+        self.skip_val = self.skip_train = False
+        if(np.mean(self.y_val) < 1e-5):
+            print("Not enough signal in validation set, will skip auc")
+            self.skip_val = True
+        if(np.mean(self.y) < 1e-5):
+            print("Not enough signal in train set, will skip auc")
+            self.skip_train = True
+
+
+    def on_train_begin(self, logs={}):
+        return
+
+    def on_train_end(self, logs={}):
+        return
+
+    def on_epoch_begin(self, epoch, logs={}):
+        return
+
+    def on_epoch_end(self, epoch, logs={}):
+        if(epoch % self.freq != 0):
+            return
+        roc_train = roc_val = 0.
+        msg = "\r%s" % self.extra_label
+        if(not self.skip_train):
+            y_pred_train = self.model.predict_proba(self.x)
+            roc_train = roc_auc_score(self.y, y_pred_train)
+            phrase = " roc-auc_train: %s" % str(round(roc_train,4))
+            msg += phrase
+        if(not self.skip_val):
+            y_pred_val = self.model.predict_proba(self.x_val)
+            roc_val = roc_auc_score(self.y_val, y_pred_val)
+            phrase = " roc-auc_val: %s" % str(round(roc_val,4))
+            msg += phrase
+        print(msg, end =100*' ' + '\n')
+        #print('\r%s roc-auc_train: %s - roc-auc_val: %s' % (self.extra_label, str(round(roc_train,4)),str(round(roc_val,4))),end=100*' '+'\n')
+        return
+
+    def on_batch_begin(self, batch, logs={}):
+        return
+
+    def on_batch_end(self, batch, logs={}):
+        return

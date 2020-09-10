@@ -3,8 +3,7 @@ sys.path.append('..')
 from utils.TrainingUtils import *
 import energyflow as ef
 from energyflow.utils import data_split, pixelate, standardize, to_categorical, zero_center
-import tensorflow.keras as keras
-from tensorflow.keras.models import Model, Sequential, load_model
+import tensorflow as tf
 from sklearn.utils import shuffle as sk_shuffle
 import h5py
 from optparse import OptionParser
@@ -178,7 +177,7 @@ evt_weights = np.ones(X_train.shape[0])
 
 
 
-myoptimizer = keras.optimizers.Adam(lr=0.001, beta_1=0.8, beta_2=0.99, epsilon=1e-08, decay=0.0005)
+myoptimizer = tf.keras.optimizers.Adam(lr=0.001, beta_1=0.8, beta_2=0.99, epsilon=1e-08, decay=0.0005)
 if(options.use_dense):
     my_model = dense_net(X_train.shape[1])
 else: 
@@ -187,18 +186,18 @@ my_model.summary()
 print("Input shape is ", my_model.layers[0].input_shape)
 print("Data shape is ", X_train.shape)
 my_model.compile(optimizer=myoptimizer,loss='binary_crossentropy',
-          metrics = [keras.metrics.AUC()]
+          metrics = [tf.keras.metrics.AUC()]
         )
 model_save_path = model_dir+ j_label+ model_name
 print("Will save model to : ", model_save_path)
 
-checkpoint = keras.callbacks.ModelCheckpoint(filepath=model_dir + j_label + "ckpt{epoch:02d}_"+model_name, 
+checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=model_dir + j_label + "ckpt{epoch:02d}_"+model_name, 
         monitor='val_auc', verbose=1, save_best_only=False, save_weights_only=False, mode='max', period = 5)
-early_stop = keras.callbacks.EarlyStopping(monitor='val_auc', min_delta=0, patience=10, verbose=1, mode='max', baseline=None, restore_best_weights=True)
+early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_auc', min_delta=0, patience=10, verbose=1, mode='max', baseline=None)
 
 additional_val = AdditionalValidationSets([(X_val, Y_true_val, "Val_true_sig")], batch_size = 500)
 
-cbs = [keras.callbacks.History()] 
+cbs = [tf.keras.callbacks.History()] 
 cbs.append(additional_val)
 
 

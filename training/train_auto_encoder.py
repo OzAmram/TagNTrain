@@ -3,8 +3,7 @@ sys.path.append('..')
 from utils.TrainingUtils import *
 import energyflow as ef
 from energyflow.utils import data_split, pixelate, standardize, to_categorical, zero_center
-import tensorflow.keras as keras
-from tensorflow.keras.models import Model, Sequential, load_model
+import tensorflow as tf
 import h5py
 from optparse import OptionParser
 from optparse import OptionGroup
@@ -14,7 +13,7 @@ from optparse import OptionGroup
 
 parser = OptionParser()
 parser = OptionParser(usage="usage: %prog analyzer outputfile [options] \nrun with --help to get list of options")
-parser.add_option("--fin", default='../data/jet_images.h5', help="Input file for training.")
+parser.add_option("-i", "--fin", default='../data/jet_images.h5', help="Input file for training.")
 parser.add_option("--plot_dir", default='../plots/', help="Directory to output plots")
 parser.add_option("--model_dir", default='../models/', help="Directory to read in and output models")
 parser.add_option("--model_name", default='auto_encoder.h5', help="What to name the model")
@@ -109,15 +108,15 @@ if(model_start == ""):
     print("Creating new model ")
     model = auto_encoder(X_train[0].shape)
     model.summary()
-    myoptimizer = keras.optimizers.Adam(lr=0.001, beta_1=0.8, beta_2=0.99, epsilon=1e-08, decay=0.0005)
-    model.compile(optimizer=myoptimizer,loss=keras.losses.mean_squared_error)
+    myoptimizer = tf.keras.optimizers.Adam(lr=0.001, beta_1=0.8, beta_2=0.99, epsilon=1e-08, decay=0.0005)
+    model.compile(optimizer=myoptimizer,loss=tf.keras.losses.mean_squared_error)
 else:
     print("Starting with model from %s " % model_start)
-    model = load_model(model_dir + j_label + model_start)
+    model = tf.keras.models.load_model(model_dir + j_label + model_start)
 
 
-early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=1, mode='min', baseline=None, restore_best_weights=True)
-cbs = [keras.callbacks.History(), early_stop]
+early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=1, mode='min', baseline=None)
+cbs = [tf.keras.callbacks.History(), early_stop]
 
 # train model
 history = model.fit(X_train, X_train,
@@ -127,12 +126,13 @@ history = model.fit(X_train, X_train,
           callbacks = cbs,
           verbose=1)
 
+print("Saving model to %s" %(model_dir+j_label+options.model_name))
 model.save(model_dir+j_label+options.model_name)
 # get predictions on test data
 X_test = X_val
 Y_test = Y_val
 X_reco_test = model.predict(X_test, batch_size=1000)
-X_reco_loss_test =  np.mean(keras.losses.mean_squared_error(X_reco_test, X_test), axis=(1,2))
+X_reco_loss_test =  np.mean(np.square(X_reco_test -  X_test), axis=(1,2))
 
 test_sig_events = (Y_test == 1.)
 test_bkg_events = (Y_test == 0.)

@@ -13,8 +13,8 @@ fin = "../data/jet_images.h5"
 dense_fin = "../data/events_cwbh_v3.h5"
 plot_dir = "../plots/"
 model_dir = "../models/"
-j_label = "j2_"
-plot_name = "roc_cmp_1p.png"
+j_label = "j1_"
+plot_name = "roc_samejet_cmp_9p.png"
 
 num_data = 100000
 data_start = 1000000
@@ -30,11 +30,14 @@ data_start = 1000000
 #labels = ["Supervised CNN", "Auto Encoder","TNT + Mjj CNN Iter #0",  "TNT + Mjj CNN Iter #1", 
        #"TNT CNN Iter #0", "TNT CNN Iter #1"]
 
-f_models = ["supervised_CNN.h5", "auto_encoder_1p.h5", "TNT0_CNN__1p.h5",  "TNT1_CNN__1p.h5", "TNT2_CNN__1p.h5", "TNT0_CNN_mjj_sb_1p.h5", 
-        "TNT1_CNN_mjj_sb_1p.h5", "TNT1_CNN_s10p_1p.h5", "TNT1_CNN_s5p_1p.h5"]
-labels = ["Supervised CNN", "Auto Encoder","TNT0 + Mjj", "TNT1 + Mjj", "TNT2 + Mjj",  "TNT0 mjj_sb", "TNT1 mjj_sb",
-        "TNT + Mjj 10p",  "TNT + Mjj 5p"]
-model_type = [0, 1, 0, 0, 0, 0, 0, 0,0,0]
+f_models = [ "supervised_CNN.h5", "auto_encoder_9p.h5", "TNT0_CNN__9p.h5", "TNT1_CNN__9p.h5", "TNT2_CNN__9p.h5",  "T_samejet0_CNN__9p.h5", "T_samejet1_CNN__9p.h5", "T_samejet2_CNN__9p.h5"]
+labels = ["Supervised", "Starting Classifier (Autoencoder)", "TNT Classifier (Iter #1)", "TNT Classifier (Iter #2)", "TNT Classifier (Iter #3)", "Same Jet Labeled Classifier (Iter #1)", "Same Jet Labeled Classifier (Iter #2)", "Same Jet Labeled Classifier (Iter #3)"]
+model_type = [0, 1,0,0,0,0, 0,0,0,0]
+#f_models = ["supervised_CNN.h5", "auto_encoder_1p.h5", "TNT0_CNN__1p.h5",  "TNT1_CNN__1p.h5", "TNT2_CNN__1p.h5", "TNT0_CNN_mjj_sb_1p.h5", 
+#        "TNT1_CNN_mjj_sb_1p.h5", "TNT1_CNN_s10p_1p.h5", "TNT1_CNN_s5p_1p.h5"]
+#labels = ["Supervised CNN", "Auto Encoder","TNT0 + Mjj", "TNT1 + Mjj", "TNT2 + Mjj",  "TNT0 mjj_sb", "TNT1 mjj_sb",
+#        "TNT + Mjj 10p",  "TNT + Mjj 5p"]
+#model_type = [0, 1, 0, 0, 0, 0, 0, 0,0,0]
 colors = ["g", "b", "r", "gray", "purple", "pink", "orange", "m", "skyblue", "yellow"]
 
 
@@ -71,7 +74,7 @@ for idx,f in enumerate(f_models):
     elif(model_type[idx] == 2): scores = model.predict(dense_inputs, batch_size = 500)
     else:
         reco_images = model.predict(images, batch_size=500)
-        scores =  np.mean(keras.losses.mean_squared_error(reco_images, images), axis=(1,2))
+        scores =  np.mean(np.square(reco_images - images), axis=(1,2))
     scores = scores.reshape(-1)
 
     hist_scores = [scores[bkg_events], scores[sig_events]]

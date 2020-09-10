@@ -7,22 +7,26 @@ from tensorflow.keras.models import Model, Sequential, load_model
 from energyflow.utils import data_split, pixelate, standardize, to_categorical, zero_center
 import h5py
 
-fin = "../data/jet_images.h5"
+fin = "../data/jet_images_v3.h5"
 fin_cwola = "../data/events_cwbh_v3.h5"
 
 plot_dir = "../plots/"
 
 model_dir = "../models/"
 
-plot_name = "roc_event_03p.png"
+plot_name = "roc_event_newsetup_03p.png"
 
 #model types: 0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)
 #f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_9p.h5", "cwbh_CNN_9p.h5", "TNT1_CNN_no_mjj_9p.h5", "TNT1_CNN__9p.h5"]
 #f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_1p.h5", "cwbh_CNN_1p.h5", "TNT1_CNN_no_mjj_s10p_1p.h5",  "TNT2_CNN_s10p_1p.h5"]
-f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_03p.h5", "cwbh_CNN_03p.h5", "TNT0_CNN_no_mjj_03p.h5", "TNT1_CNN_s10p_03p.h5"]
+#f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_03p.h5", "cwbh_CNN_03p.h5", "TNT0_CNN_no_mjj_03p.h5", "TNT1_CNN_s10p_03p.h5"]
 #f_models = ["supervised_CNN.h5", "supervised_CNN.h5", "auto_encoder_01p.h5", "cwbh_CNN_01p.h5", "TNT0_CNN_no_mjj_01p.h5", "TNT2_CNN_s10p_01p.h5"]
-labels = ["Supervised, both jets","Supervised, separate", "Autoencoders", "CWola hunting", "TNT", "TNT + M$_{jj}$"]
-model_type = [3, 0, 1, 3, 0, 0, 0, 0]
+#f_models = ["auto_encoder_01p.h5", "cwola_hunting_1p.h5", "TNT1_CNN__1p.h5", "TNT2_CNN_mjj_1p.h5"]
+f_models = ["auto_encoder_01p.h5", "cwola_hunting_03p.h5", "TNT0_CNN__03p.h5", "TNT1_CNN_mjj_03p.h5"]
+#labels = ["Supervised, both jets","Supervised, separate", "Autoencoders", "CWola hunting", "TNT", "TNT + M$_{jj}$"]
+labels = ["Autoencoders", "CWola hunting", "TNT", "TNT + Mjj"]
+#model_type = [3, 0, 1, 3, 0, 0, 0, 0]
+model_type = [1, 3, 0, 0]
 colors = ["g", "gray", "b", "r","m","c", "skyblue", "yellow"]
 
 
@@ -88,9 +92,9 @@ for idx,f in enumerate(f_models):
 
         else: #autoencoder
             j1_reco_images = j1_model.predict(j1_images, batch_size=500)
-            j1_score =  np.mean(keras.losses.mean_squared_error(j1_reco_images, j1_images), axis=(1,2))
+            j1_score =  np.mean(np.square(j1_reco_images - j1_images), axis=(1,2))
             j2_reco_images = j2_model.predict(j2_images, batch_size=500)
-            j2_score =  np.mean(keras.losses.mean_squared_error(j2_reco_images, j2_images), axis=(1,2))
+            j2_score =  np.mean(np.square(j2_reco_images - j2_images), axis=(1,2))
         j1_score = j1_score.reshape(-1)
         j2_score = j2_score.reshape(-1)
         sig_eff = [len(Y[(j1_score > np.percentile(j1_score,i)) & (j2_score > np.percentile(j2_score,i)) & (Y==1)])/len(Y[Y==1]) for i in np.arange(0.,100., 100./n_points)]

@@ -3,8 +3,7 @@ sys.path.append('..')
 from utils.TrainingUtils import *
 import energyflow as ef
 from energyflow.utils import data_split,  standardize, zero_center
-import tensorflow.keras as keras
-from tensorflow.keras.models import Model, Sequential, load_model
+import tensorflow as tf
 from optparse import OptionParser
 from optparse import OptionGroup
 
@@ -15,11 +14,11 @@ parser = OptionParser()
 parser = OptionParser(usage="usage: %prog analyzer outputfile [options] \nrun with --help to get list of options")
 parser.add_option("--plot_dir", default='../plots/', help="Directory to output plots")
 parser.add_option("--model_dir", default='../models/', help="Directory to read in and output models")
-parser.add_option("--fin", default='../data/jet_images.h5', help="Input file for training.")
+parser.add_option("-i", "--fin", default='../data/jet_images.h5', help="Input file for training.")
 parser.add_option("--extra_label", default='', help="Extra string to add to name of models")
 parser.add_option("--model_start", default="", help="Starting point for model (empty string for new model)")
 
-parser.add_option("-i", "--iter", dest = "tnt_iter", type = 'int', default=0, 
+parser.add_option("--iter", dest = "tnt_iter", type = 'int', default=0, 
         help="What iteration of  the tag & train algorithm this is (Start = 0).")
 parser.add_option("--evt_offset", type='int', default=0, help="Offset to set which events to use for training")
 parser.add_option("--num_data", type='int', default=200000, help="How many events to use for training (before filtering)")
@@ -214,15 +213,17 @@ if(options.filt_sig):
 
 
 print("Loading labeling model from %s " % f_labeler)
-labeler = load_model(f_labeler)
+labeler = tf.keras.models.load_model(f_labeler)
 
 L_pred = labeler.predict(L, batch_size = 500)
 
 print("Using model %s as labeler \n" % labeler_name)
 if("auto_encoder" in labeler_name):
-    L_labeler_scores =  np.mean(keras.losses.mean_squared_error(L_pred, L), axis=(1,2))
+    L_labeler_scores =  np.mean(np.square(L_pred - L), axis=(1,2)).reshape(-1)
 else: 
     L_labeler_scores = L_pred.reshape(-1)
+
+print(L_labeler_scores.shape)
 
 
 print("Sig-rich region defined > %i percentile" %options.sig_cut)
@@ -315,7 +316,7 @@ if(options.reweight):
 
 
 
-myoptimizer = keras.optimizers.Adam(lr=0.001, beta_1=0.8, beta_2=0.99, epsilon=1e-08, decay=0.0005)
+myoptimizer = tf.keras.optimizers.Adam(lr=0.001, beta_1=0.8, beta_2=0.99, epsilon=1e-08, decay=0.0005)
 
 if(model_start == ""):
     print("Creating new model ")
@@ -323,24 +324,24 @@ if(model_start == ""):
     else: my_model = CNN(X_train[0].shape)
 
     my_model.summary()
-    my_model.compile(optimizer=myoptimizer,loss='binary_crossentropy',
-              metrics = [keras.metrics.AUC()]
-            )
+    my_model.compile(optimizer=myoptimizer,loss='binary_crossentropy')
 else:
     print("Starting with model from %s " % model_start)
-    my_model = load_model(model_dir + j_label + model_start)
+    my_model = tf.keras.models.load_model(model_dir + j_label + model_start)
 
 
-early_stop = keras.callbacks.EarlyStopping(monitor='val_auc', min_delta=0, patience=10, verbose=1, mode='max', baseline=None, restore_best_weights=True)
+early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_auc', min_delta=0, patience=10, verbose=1, mode='max', baseline=None)
 
 additional_val = AdditionalValidationSets([(X_val, Y_true_val, "Val_true_sig")], batch_size = 500)
 
-cbs = [keras.callbacks.History()] 
+cbs = [tf.keras.callbacks.History()] 
+roc = RocCallback(training_data=(X_train, Y_true_train), validation_data=(X_val, Y_true_val), extra_label = "true: ", freq = 5)
+cbs.append(roc)
 
 #checkpoint_cb = keras.callbacks.ModelCheckpoint(filepath=model_dir + j_label + "ckpt{epoch:02d}_"+model_name, 
 #       monitor='val_auc', verbose=1, save_best_only=False, save_weights_only=False, mode='max', period = 5)
 #if(checkpoint): cbs.append(checkpoint_cb)
-cbs.append(additional_val)
+#cbs.append(additional_val)
 
 
 
