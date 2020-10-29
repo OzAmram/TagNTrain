@@ -16,7 +16,118 @@ from sklearn.utils import shuffle as sk_shuffle
 
 fig_size = (12,9)
 
+def print_image(a):
+    for i in range(a.shape[0]):
+        for j in range(a.shape[1]):
+            print("%5.3e" % a[i,j], end=' ')
+        print("\n", end='')
 
+# standardize(*args, channels=None, copy=False, reg=10**-10)
+def standardize(*args, **kwargs):
+    """Normalizes each argument by the standard deviation of the pixels in 
+    args[0]. The expected use case would be `standardize(X_train, X_val, 
+    X_test)`.
+    **Arguments**
+    - ***args** : arbitrary _numpy.ndarray_ datasets
+        - An arbitrary number of datasets, each required to have
+        the same shape in all but the first axis.
+    - **channels** : _int_
+        - A list of which channels (assumed to be the last axis)
+        to standardize. `None` is interpretted to mean every channel.
+    - **copy** : _bool_
+        - Whether or not to copy the input arrays before modifying them.
+    - **reg** : _float_
+        - Small parameter used to avoid dividing by zero. It's important
+        that this be kept consistent for images used with a given model.
+    **Returns**
+    - _list_ 
+        - A list of the now-standardized arguments.
+    """
+
+    channels = kwargs.pop('channels', [])
+    copy = kwargs.pop('copy', False)
+    reg = kwargs.pop('reg', 10**-10)
+
+    if len(kwargs):
+        raise TypeError('following kwargs are invalid: {}'.format(kwargs))
+
+    assert len(args) > 0
+
+    # treat channels properly
+    if channels is None: 
+        channels = np.arange(args[0].shape[-1])
+
+    print("Before:")
+    print(args[0].shape)
+    #print_image(np.array(args[0]))
+    
+
+    # compute stds
+    print("Stds:")
+    stds = np.std(args[0], axis=0) + reg
+    print(stds.shape)
+    print_image(stds)
+    
+
+    # copy arguments if requested
+    if copy: 
+        X = [np.copy(arg) for arg in args]
+    else: 
+        X = args
+
+    # iterate through arguments and channels
+    for x in X: 
+        for chan in channels: 
+            x[...,chan] /= stds[...,chan]
+    print("after")
+    return X
+
+def zero_center(*args, **kwargs):
+    """Subtracts the mean of arg[0] from the arguments. The expected 
+    use case would be `standardize(X_train, X_val, X_test)`.
+    **Arguments**
+    - ***args** : arbitrary _numpy.ndarray_ datasets
+        - An arbitrary number of datasets, each required to have
+        the same shape in all but the first axis.
+    - **channels** : _int_
+        - A list of which channels (assumed to be the last axis)
+        to zero center. `None` is interpretted to mean every channel.
+    - **copy** : _bool_
+        - Whether or not to copy the input arrays before modifying them.
+    **Returns**
+    - _list_ 
+        - A list of the zero-centered arguments.
+    """
+
+    channels = kwargs.pop('channels', None)
+    copy = kwargs.pop('copy', False)
+
+    if len(kwargs):
+        raise TypeError('following kwargs are invalid: {}'.format(kwargs))
+
+    assert len(args) > 0
+
+    # treat channels properly
+    if channels is None: 
+        channels = np.arange(args[0].shape[-1])
+
+    # compute mean of the first argument
+    mean = np.mean(args[0], axis=0)
+    print("Means:")
+    print_image(mean)
+
+    # copy arguments if requested
+    if copy: 
+        X = [np.copy(arg) for arg in args]
+    else: 
+        X = args
+
+    # iterate through arguments and channels
+    for x in X: 
+        for chan in channels: 
+            x[...,chan] -= mean[...,chan]
+
+    return X
 
 
 def make_selection(j1_scores, j2_scores, percentile):

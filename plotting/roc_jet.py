@@ -4,7 +4,7 @@ from utils.TrainingUtils import *
 import energyflow as ef
 import tensorflow.keras as keras
 from tensorflow.keras.models import Model, Sequential, load_model
-from energyflow.utils import data_split,  standardize, zero_center
+from energyflow.utils import data_split
 import h5py
 
 
@@ -74,6 +74,10 @@ for idx,f in enumerate(f_models):
     elif(model_type[idx] == 2): scores = model.predict(dense_inputs, batch_size = 500)
     else:
         reco_images = model.predict(images, batch_size=500)
+        print_image(images[0])
+        print("reco:")
+        print_image(reco_images[0])
+        exit(1)
         scores =  np.mean(np.square(reco_images - images), axis=(1,2))
     scores = scores.reshape(-1)
 

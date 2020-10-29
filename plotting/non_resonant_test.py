@@ -12,10 +12,10 @@ fin = "../data/jet_images_v3.h5"
 model_dir = "../models/"
 
 #model types: 0 CNN (one jet), 1 auto encoder, 2 dense (one jet), 3 CNN (both jets), 4 dense (both jets)
-#model_name = "TNT1_CNN__1p.h5"
-#model_type = 0
-model_name = "auto_encoder_1p.h5"
-model_type = 1
+model_name = "TNT1_CNN_mjj_03p.h5"
+model_type = 0
+#model_name = "auto_encoder_1p.h5"
+#model_type = 1
 
 
 
@@ -23,10 +23,17 @@ filt_sig = True
 sig_frac = 0.003
 
 num_data = 300000
+#data_start = 200000
 data_start = 800000
 
 #sig_percentile_cut = 99.5
-cuts = [90., 92., 95., 97., 99., 99.5, 99.9]
+cuts = [90., 95., 97., 99., 99.5, 99.9, 99.95]
+#cuts = [80., 90., 92., 94., 95., 96., 97., 98., 99., 99.25, 99.5, 99.75, 99.9, 99.95, 99.99]
+effs = []
+poisson_uncs = []
+bkg_ratios = []
+bkg_ratios_unc = []
+
 bkg_percentile_cut = 40.
 
 use_dense = (model_type == 2 or model_type == 4)
@@ -116,11 +123,22 @@ for sig_percentile_cut in cuts:
 
     est_bkg = est_j1_cut_eff * est_j2_cut_eff * Y.shape[0]
     est_bkg_unc = np.sqrt((est_j2_cut_eff * Y.shape[0] * est_j1_cut_eff_unc)**2 + (est_j1_cut_eff * Y.shape[0] * est_j2_cut_eff_unc)**2 )
+    sys_bkg_unc = 0.03*est_bkg
+
     true_bkg = Y[sig_mask & (Y < 0.1) ].shape[0]
     obs_events = Y[sig_mask].shape[0]
-    unc = np.sqrt(obs_events + est_bkg_unc**2)
+    unc = np.sqrt(obs_events + est_bkg_unc**2 + sys_bkg_unc**2)
     significance = (obs_events - est_bkg)/unc
     expected_sig= (obs_events - true_bkg)/unc
 
+    bkg_ratios.append(est_bkg / true_bkg)
+    bkg_ratios_unc.append(est_bkg_unc /  true_bkg)
+    poisson_uncs.append(np.sqrt(true_bkg)/ true_bkg)
+    effs.append(eff)
+
     print("\n Eff %.3f: Obs %.0f Est bkg %.0f +/- %.0f, True bkg %.0f, obs sig %.2f, expected sig %.2f \n" % (eff, obs_events, est_bkg, est_bkg_unc, true_bkg, significance, expected_sig))
 
+print(effs)
+print(bkg_ratios)
+print(bkg_ratios_unc)
+print(poisson_uncs)
